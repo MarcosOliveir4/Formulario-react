@@ -1,14 +1,6 @@
 import { Container, Typography } from "@material-ui/core";
 import "./App.css";
-import FormularioCadastro from "./components/formularioCadastro";
-
-type cadastro = {
-  nome: string;
-  sobrenome: string;
-  cpf: string;
-  novidade: boolean;
-  promocoes: boolean;
-};
+import { FormularioCadastro } from "./components/formularioCadastro";
 
 function App() {
   return (
@@ -21,7 +13,7 @@ function App() {
   );
 }
 
-function onSubmit(dados: cadastro) {
+function onSubmit(dados: any) {
   console.log(dados);
 }
 

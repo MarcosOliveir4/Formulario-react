@@ -1,2 +1,5 @@
+import DadosPessoais from "./dadosPessoais";
 import FormularioCadastro from "./formularioCadastro";
-export default FormularioCadastro;
+import DadosUsuario from "./dadosUsuario";
+import DadosEntrega from "./dadosEntrega";
+export { DadosPessoais, FormularioCadastro, DadosUsuario, DadosEntrega };
