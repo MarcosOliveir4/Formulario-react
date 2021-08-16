@@ -25,7 +25,6 @@ function DadosPessoais({ aoEnviar, validacoes }: Form) {
   ) {
     const { name, value } = event.target;
     const novoEstado = { ...erros };
-    console.log(validacoes)
     novoEstado[name] = validacoes[name](value);
     setErros(novoEstado);
   }

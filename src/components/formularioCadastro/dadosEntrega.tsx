@@ -1,5 +1,7 @@
 import { Button, Grid, TextField } from "@material-ui/core";
 import { FocusEvent, useState } from "react";
+import apiCep from "../../service/viaCep";
+import CEP from "../../models/cep";
 type Form = {
   aoEnviar: Function;
   validacoes: { [x: string]: Function };
@@ -13,11 +15,27 @@ function DadosEntrega({ aoEnviar, validacoes }: Form) {
   const [cep, setCep] = useState("");
   const [endereco, setEndereco] = useState("");
   const [numero, setNumero] = useState("");
+  const [complemento, setComplemento] = useState("");
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
   const [erros, setErros] = useState<Erros>({
     cep: { valido: true, texto: "" },
   });
+
+  async function getApi() {
+    await apiCep
+      .get(`${cep}/json`)
+      .then((resp: any) => {
+        const data: CEP = resp.data;
+        if (data.localidade && data.uf && data.logradouro) {
+          setCidade(data.localidade);
+          setEstado(data.uf);
+          setEndereco(data.logradouro);
+        }
+      })
+      .catch((resp) => console.log(resp))
+      .finally();
+  }
 
   function validarCampos(
     event: FocusEvent<HTMLTextAreaElement | HTMLInputElement>
@@ -26,6 +44,9 @@ function DadosEntrega({ aoEnviar, validacoes }: Form) {
     const novoEstado = { ...erros };
     novoEstado[name] = validacoes[name](value);
     setErros(novoEstado);
+    if (novoEstado.cep.valido) {
+      getApi();
+    }
   }
 
   function possoEnviar(): boolean {
@@ -43,7 +64,7 @@ function DadosEntrega({ aoEnviar, validacoes }: Form) {
       onSubmit={(event) => {
         event.preventDefault();
         if (possoEnviar()) {
-          aoEnviar({ cep, endereco, numero, estado, cidade });
+          aoEnviar({ cep, endereco, numero, estado, cidade, complemento });
         }
       }}
     >
@@ -83,7 +104,7 @@ function DadosEntrega({ aoEnviar, validacoes }: Form) {
             required
           />
         </Grid>
-        <Grid item sm={6}>
+        <Grid item sm={3}>
           <TextField
             value={numero}
             onChange={(event) => {
@@ -98,7 +119,21 @@ function DadosEntrega({ aoEnviar, validacoes }: Form) {
             required
           />
         </Grid>
-        <Grid item sm={6}>
+        <Grid item sm={3}>
+          <TextField
+            value={complemento}
+            onChange={(event) => {
+              setComplemento(event.target.value);
+            }}
+            id="complemento"
+            label="complemento"
+            type="text"
+            variant="outlined"
+            margin="normal"
+            fullWidth
+          />
+        </Grid>
+        <Grid item sm={3}>
           <TextField
             value={estado}
             onChange={(event) => {
@@ -113,7 +148,7 @@ function DadosEntrega({ aoEnviar, validacoes }: Form) {
             required
           />
         </Grid>
-        <Grid item sm={6}>
+        <Grid item sm={9}>
           <TextField
             value={cidade}
             onChange={(event) => {
