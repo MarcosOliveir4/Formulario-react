@@ -1,11 +1,28 @@
 import { Button, TextField } from "@material-ui/core";
-import { useState } from "react";
+import { FocusEvent, useState } from "react";
 type Form = {
   aoEnviar: Function;
+  validacoes: { [x: string]: Function };
 };
-function DadosUsuario({ aoEnviar }: Form) {
+
+type Erros = {
+  [x: string]: { valido: boolean; texto: string };
+};
+function DadosUsuario({ aoEnviar, validacoes }: Form) {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [erros, setErros] = useState<Erros>({
+    senha: { valido: true, texto: "" },
+  });
+
+  function validarCampos(
+    event: FocusEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) {
+    const { name, value } = event.target;
+    const novoEstado = { ...erros };
+    novoEstado[name] = validacoes[name](value);
+    setErros(novoEstado);
+  }
   return (
     <form
       autoComplete="off"
@@ -32,6 +49,10 @@ function DadosUsuario({ aoEnviar }: Form) {
         onChange={(event) => {
           setSenha(event.target.value);
         }}
+        onBlur={(event) => validarCampos(event)}
+        name="senha"
+        error={!erros.senha.valido}
+        helperText={erros.senha.texto}
         id="senha"
         variant="outlined"
         fullWidth
@@ -41,7 +62,7 @@ function DadosUsuario({ aoEnviar }: Form) {
         required
       />
       <Button variant="outlined" color="primary" type="submit">
-        Cadastrar
+        Próximo
       </Button>
     </form>
   );

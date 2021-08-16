@@ -1,23 +1,53 @@
 import { Button, Grid, TextField } from "@material-ui/core";
-import { useState } from "react";
+import { FocusEvent, useState } from "react";
 type Form = {
   aoEnviar: Function;
+  validacoes: { [x: string]: Function };
 };
-function DadosEntrega({ aoEnviar }: Form) {
+
+type Erros = {
+  [x: string]: { valido: boolean; texto: string };
+};
+
+function DadosEntrega({ aoEnviar, validacoes }: Form) {
   const [cep, setCep] = useState("");
   const [endereco, setEndereco] = useState("");
   const [numero, setNumero] = useState("");
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
+  const [erros, setErros] = useState<Erros>({
+    cep: { valido: true, texto: "" },
+  });
+
+  function validarCampos(
+    event: FocusEvent<HTMLTextAreaElement | HTMLInputElement>
+  ) {
+    const { name, value } = event.target;
+    const novoEstado = { ...erros };
+    novoEstado[name] = validacoes[name](value);
+    setErros(novoEstado);
+  }
+
+  function possoEnviar(): boolean {
+    for (let campo in erros) {
+      if (!erros[campo].valido) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   return (
     <form
       autoComplete="off"
       onSubmit={(event) => {
         event.preventDefault();
-        aoEnviar({ cep, endereco, numero, estado, cidade });
+        if (possoEnviar()) {
+          aoEnviar({ cep, endereco, numero, estado, cidade });
+        }
       }}
     >
-      <Grid container alignContent="center"  spacing={1}>
+      <Grid container alignContent="center" spacing={1}>
         <Grid item sm={12}>
           <TextField
             value={endereco}
@@ -34,18 +64,22 @@ function DadosEntrega({ aoEnviar }: Form) {
           />
         </Grid>
 
-        <Grid item sm={6} >
+        <Grid item sm={6}>
           <TextField
             value={cep}
             onChange={(event) => {
-              setCep(event.target.value);
+              setCep(event.target.value.replace(/\D/g, ""));
             }}
             id="cep"
+            name="cep"
             label="CEP"
-            type="number"
             variant="outlined"
             margin="normal"
+            type="text"
             fullWidth
+            onBlur={(event) => validarCampos(event)}
+            error={!erros.cep.valido}
+            helperText={erros.cep.texto}
             required
           />
         </Grid>
@@ -53,11 +87,11 @@ function DadosEntrega({ aoEnviar }: Form) {
           <TextField
             value={numero}
             onChange={(event) => {
-              setNumero(event.target.value);
+              setNumero(event.target.value.replace(/\D/g, ""));
             }}
             id="numero"
             label="Numero"
-            type="number"
+            type="text"
             variant="outlined"
             margin="normal"
             fullWidth
